@@ -23,6 +23,12 @@ In co-op, the same happens when a teammate moves an item in a container you both
 
 You can check out the latest changes in [`CHANGELOG.md`](CHANGELOG.md).
 
+## 📷 Preview
+
+| Before | After |
+| :---: | :---: |
+| <img src="readme-res/before.png" alt="before" width="400"/> | <img src="readme-res/after.png" alt="after" width="400"/> |
+
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
