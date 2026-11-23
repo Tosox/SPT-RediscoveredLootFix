@@ -1,0 +1,9 @@
+<Project>
+  <!-- Copy to Directory.Build.local.props and set your SPT install folder.
+       Builds then deploy client mods to BepInEx\plugins\<ModFolder> and server mods to SPT_Runtime\user\mods\<ModFolder>. -->
+  <PropertyGroup>
+    <SPTPath>C:\SPT</SPTPath>
+    <!-- Optional, with ScriptEngine: client Debug builds go to BepInEx\scripts for reloading in game -->
+    <!-- <UseScriptEngine Condition="'$(Configuration)' == 'Debug'">true</UseScriptEngine> -->
+  </PropertyGroup>
+</Project>

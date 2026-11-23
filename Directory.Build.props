@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <Product>Rediscovered Loot Fix</Product>
+    <Version>1.0.0</Version>
+    <Authors>Tosox</Authors>
+    <Company>https://github.com/Tosox/SPT-RediscoveredLootFix</Company>
+    <Copyright>Copyright © Tosox 2026</Copyright>
+    <ModFolder>Tosox.RediscoveredLootFix</ModFolder>
+    <ModGuid>de.tosox.rediscoveredlootfix</ModGuid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+  </PropertyGroup>
+  <Import Project="Directory.Build.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.local.props')" />
+</Project>

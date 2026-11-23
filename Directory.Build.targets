@@ -1,0 +1,52 @@
+<Project>
+  <PropertyGroup>
+    <_SPTFound Condition="Exists('$(SPTPath)\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll')">true</_SPTFound>
+  </PropertyGroup>
+
+  <Target Name="CheckSPTPath" AfterTargets="Build" Condition="'$(_SPTFound)' != 'true'">
+    <Message Importance="high" Condition="'$(SPTPath)' == ''" Text="No SPTPath set, skipping the deploy. Copy Directory.Build.local.props.example to Directory.Build.local.props to deploy to SPT." />
+    <Warning Condition="'$(SPTPath)' != ''" Text="SPTPath '$(SPTPath)' is not an SPT installation, skipping the deploy. Fix it in Directory.Build.local.props." />
+  </Target>
+
+  <Target Name="_ResolveModLayout">
+    <PropertyGroup>
+      <_IsServerMod Condition="'%(PackageReference.Identity)' == 'SPTushonka.Server.Core' Or '%(PackageReference.Identity)' == 'SPTarkov.Server.Core'">true</_IsServerMod>
+      <_ModLayout Condition="'$(_IsServerMod)' == 'true'">SPT_Runtime/user/mods/$(ModFolder)</_ModLayout>
+      <_ModLayout Condition="'$(_IsServerMod)' != 'true'">BepInEx/plugins/$(ModFolder)</_ModLayout>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_ModAssets Include="$(MSBuildProjectDirectory)/Assets/**/*" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DeployToSPT" AfterTargets="Build" DependsOnTargets="_ResolveModLayout" Condition="'$(_SPTFound)' == 'true'">
+    <PropertyGroup>
+      <_ModDir>$([MSBuild]::NormalizeDirectory('$(SPTPath)', '$(_ModLayout)'))</_ModDir>
+      <_ScriptsDir>$([MSBuild]::NormalizeDirectory('$(SPTPath)', 'BepInEx', 'scripts'))</_ScriptsDir>
+      <_UseScripts Condition="'$(UseScriptEngine)' == 'true' And '$(_IsServerMod)' != 'true'">true</_UseScripts>
+      <_DllDir>$(_ModDir)</_DllDir>
+      <_DllDir Condition="'$(_UseScripts)' == 'true'">$(_ScriptsDir)</_DllDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_DeployFiles Include="$(TargetPath)" />
+      <_DeployFiles Include="$(TargetDir)$(TargetName).pdb" Condition="'$(_UseScripts)' == 'true' And Exists('$(TargetDir)$(TargetName).pdb')" />
+      <_StaleFiles Include="$(_ModDir)$(TargetName).dll;$(_ModDir)$(TargetName).pdb" Condition="'$(_UseScripts)' == 'true'" />
+      <_StaleFiles Include="$(_ScriptsDir)$(TargetName).dll;$(_ScriptsDir)$(TargetName).pdb" Condition="'$(_UseScripts)' != 'true' And '$(_IsServerMod)' != 'true'" />
+    </ItemGroup>
+
+    <Delete Files="@(_StaleFiles)" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(_DeployFiles)" DestinationFolder="$(_DllDir)" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="@(_ModAssets)" DestinationFiles="@(_ModAssets->'$(_ModDir)%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="WarnAndContinue" />
+  </Target>
+
+  <Target Name="StageRelease" AfterTargets="Build" DependsOnTargets="_ResolveModLayout" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <_StageDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'dist', '$(_ModLayout)'))</_StageDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(TargetPath);$(MSBuildThisFileDirectory)LICENSE" DestinationFolder="$(_StageDir)" />
+    <Copy SourceFiles="@(_ModAssets)" DestinationFiles="@(_ModAssets->'$(_StageDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>
