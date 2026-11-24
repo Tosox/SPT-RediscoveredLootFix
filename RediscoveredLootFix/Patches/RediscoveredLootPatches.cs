@@ -11,21 +11,21 @@ namespace Tosox.RediscoveredLootFix.Patches
 {
     internal class SetItemAsKnownPatch : ModulePatch
     {
-        public static event Action<ActiveSearchController, Item> OnItemRediscovered;
+        public static event Action<PlayerSearchControllerClass, Item> OnItemRediscovered;
 
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(ActiveSearchController), nameof(ActiveSearchController.SetItemAsKnown));
+            return AccessTools.Method(typeof(PlayerSearchControllerClass), nameof(PlayerSearchControllerClass.SetItemAsKnown));
         }
 
         [PatchPrefix]
-        public static void Prefix(ActiveSearchController __instance, Item item, bool raiseEvents, out bool __state)
+        public static void Prefix(PlayerSearchControllerClass __instance, Item item, bool raiseEvents, out bool __state)
         {
-            __state = raiseEvents && __instance._discoveredItems.Contains(item);
+            __state = raiseEvents && __instance.HashSet_2.Contains(item);
         }
 
         [PatchPostfix]
-        public static void Postfix(ActiveSearchController __instance, Item item, bool __state)
+        public static void Postfix(PlayerSearchControllerClass __instance, Item item, bool __state)
         {
             if (__state)
                 OnItemRediscovered?.Invoke(__instance, item);
@@ -40,15 +40,15 @@ namespace Tosox.RediscoveredLootFix.Patches
         }
 
         [PatchPostfix]
-        public static void Postfix(GridView __instance, ItemController ____itemController, UIParent ___UI)
+        public static void Postfix(GridView __instance, TraderControllerClass ____itemController, AddViewListClass ___UI)
         {
-            if (____itemController.SearchController is not ActiveSearchController searchController)
+            if (____itemController.SearchController is not PlayerSearchControllerClass searchController)
                 return;
 
-            void Handler(ActiveSearchController controller, Item item)
+            void Handler(PlayerSearchControllerClass controller, Item item)
             {
                 if (controller == searchController)
-                    __instance.ItemFoundHandler(item);
+                    __instance.method_0(item);
             }
 
             SetItemAsKnownPatch.OnItemRediscovered += Handler;
